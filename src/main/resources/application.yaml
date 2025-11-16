@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: Hash Transfer
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 10GB
+      file-size-threshold: 0B
+
+hashtransfer:
+  expiration-minutes: 1440
+  expiration-check-cron: '0 */15 * * * *'
+  file-storage-directory: 'files/'
+  metadata-file-name: 'metadata.json'

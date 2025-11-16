@@ -1,0 +1,7 @@
+hashtransfer:
+  expiration-minutes: 60
+  expiration-check-cron: '0 */5 * * * *'
+
+logging:
+  level:
+    fr.leowenex.hashtransfer: DEBUG
