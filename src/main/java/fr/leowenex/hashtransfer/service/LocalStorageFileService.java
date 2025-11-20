@@ -74,7 +74,7 @@ public class LocalStorageFileService implements FileService {
      * @param expectedSha256CheckSum The expected SHA-256 checksum.
      * @param fileName The name of the file (for logging purposes).
      */
-    public static void CheckSha256Checksum(String computedCheckSum, String expectedSha256CheckSum, String fileName) {
+    private static void CheckSha256Checksum(String computedCheckSum, String expectedSha256CheckSum, String fileName) {
 
         if (!ObjectUtils.isEmpty(expectedSha256CheckSum)){
             if (computedCheckSum.equals(expectedSha256CheckSum)) {

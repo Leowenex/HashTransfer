@@ -4,5 +4,4 @@ public record FileData (
         String contentType,
         String filename,
         String sha256
-) {
-}
+) {}

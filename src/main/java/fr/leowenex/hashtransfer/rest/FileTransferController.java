@@ -91,7 +91,7 @@ public class FileTransferController {
     }
 
 
-    @PostMapping("/upload")
+    @PostMapping
     public ResponseEntity<@NonNull FileUploadResponse> uploadFile(@RequestPart(value = "file") MultipartFile file, @RequestPart(value = "sha256", required = false) String sha256) throws IOException {
 
         if (ObjectUtils.isEmpty(file.getOriginalFilename())) {

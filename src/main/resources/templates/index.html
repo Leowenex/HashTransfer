@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>HashTransfer</title>
+
+    <style>
+
+        html {
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .progress-wrapper {
+            width:100%;
+        }
+        .progress-wrapper .progress {
+            background-color:green;
+            width:0;
+            padding:5px 0 5px 0;
+        }
+    </style>
+
+    <script>
+        function postFile() {
+            const formdata = new FormData();
+
+            formdata.append('file', document.getElementById('file').files[0]);
+            if (document.getElementById('fileSh256').value) {
+                formdata.append('sha256', document.getElementById('fileSh256').value);
+            }
+
+            const request = new XMLHttpRequest();
+
+            request.upload.addEventListener('progress', function (e) {
+                const fileSize = document.getElementById('file').files[0].size;
+
+                if (e.loaded <= fileSize) {
+                    const percent = Math.round(e.loaded / fileSize * 100);
+                    document.getElementById('progress-bar-file').style.width = percent + '%';
+                    document.getElementById('progress-bar-file').innerHTML = percent + '%';
+                }
+
+                if(e.loaded === e.total){
+                    document.getElementById('progress-bar-file').style.width = '100%';
+                    document.getElementById('progress-bar-file').innerHTML = 'Upload complete. Processing...';
+                }
+            });
+
+            request.upload.addEventListener('loadend', function () {
+                document.getElementById('progress-bar-file').style.width = '100%';
+                document.getElementById('progress-bar-file').innerHTML = 'Upload complete';
+            });
+
+            request.onreadystatechange = function () {
+                if (request.readyState === XMLHttpRequest.DONE) {
+                    if (request.status === 200) {
+                        const response = JSON.parse(request.responseText);
+                        const downloadLink = window.location.origin + '/api/file/' + response.fileId + '/download';
+                        document.getElementById('download-link-text').innerHTML = 'Download Link: <a href="' + downloadLink + '">' + downloadLink + '</a>';
+                    } else {
+                        alert('File upload failed. Please try again.');
+                    }
+                }
+            };
+
+            request.open('post', '/api/file');
+            request.timeout = 120000;
+            request.send(formdata);
+        }
+    </script>
+
+</head>
+<body>
+    <h1>Welcome to HashTransfer</h1>
+    <p>Your simple file transfer solution.</p>
+
+    <h2>Upload your files now !</h2>
+    <form onsubmit="event.preventDefault(); postFile();" class="upload-form">
+        <div class="form-group">
+            <label for="file">Select file to upload:</label>
+            <input id="file" type="file" name="file" required />
+        </div>
+        <div class="form-group">
+            <label for="fileSh256">SHA-256 Hash (Optional):</label>
+            <input id="fileSh256" type="text" name="sha256" placeholder="Enter SHA-256 hash of the file (Optional)"/>
+        </div>
+        <div class="form-group">
+            <button type="submit">Upload File</button>
+        </div>
+        <div class="progress-wrapper">
+            <div id="progress-bar-file" class="progress"></div>
+        </div>
+
+        <div class="download-link">
+            <p id ="download-link-text"></p>
+        </div>
+    </form>
+</body>
+</html>
