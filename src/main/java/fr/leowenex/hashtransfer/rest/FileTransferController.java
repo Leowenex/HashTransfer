@@ -4,6 +4,7 @@ import fr.leowenex.hashtransfer.dto.FileData;
 import fr.leowenex.hashtransfer.dto.FileDownloadResponse;
 import fr.leowenex.hashtransfer.dto.FileUploadResponse;
 import fr.leowenex.hashtransfer.service.FileService;
+import fr.leowenex.hashtransfer.util.ContentDigestHeaderUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -55,7 +56,7 @@ public class FileTransferController {
         headers.setContentDisposition(contentDisposition);
         headers.setContentLength(fileResource.contentLength());
         headers.setContentType(mediaType);
-        headers.add("Content-Digest", "sha-256=" + fileData.sha256());
+        headers.add(ContentDigestHeaderUtils.CONTENT_DIGEST_HEADER, ContentDigestHeaderUtils.SHA256_ALGORITHM_PREFIX + fileData.sha256());
 
         return ResponseEntity.ok().headers(headers).body(fileResource);
     }
