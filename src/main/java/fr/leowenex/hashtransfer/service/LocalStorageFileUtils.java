@@ -4,10 +4,12 @@ import fr.leowenex.hashtransfer.exception.DataAccessException;
 import fr.leowenex.hashtransfer.exception.InvalidFilePathException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LocalStorageFileUtils {
 
@@ -21,6 +23,7 @@ public class LocalStorageFileUtils {
         Path fileStorageDirectoryPath = Paths.get(fileStorageDirectory).toAbsolutePath().normalize();
         if (!fileStorageDirectoryPath.toFile().exists()) {
             if (!fileStorageDirectoryPath.toFile().mkdirs()) {
+                log.error("Could not create file storage directory: {}", fileStorageDirectoryPath);
                 throw new DataAccessException("Could not create file storage directory");
             }
         }

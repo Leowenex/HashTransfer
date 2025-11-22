@@ -49,6 +49,7 @@ public class LocalStorageFileService implements FileService {
         try {
             fileData = objectMapper.readValue(Files.readString(fileMetadataFilePath), FileData.class);
         } catch (IOException e) {
+            log.error("Error reading metadata file: {}", e.getMessage());
             throw new UnreadableMetadataException(e.getMessage());
         }
         return fileData;
@@ -64,6 +65,7 @@ public class LocalStorageFileService implements FileService {
         try {
             Files.writeString(fileMetadataFilePath, metadataJson);
         } catch (IOException e) {
+            log.error("Error writing metadata file: {}", e.getMessage());
             throw new DataAccessException("Could not write metadata file: " + e.getMessage());
         }
     }
@@ -80,6 +82,7 @@ public class LocalStorageFileService implements FileService {
             if (computedCheckSum.equals(expectedSha256CheckSum)) {
                 log.debug("Uploaded file SHA-256 checksum matches the provided checksum for fileName={}", fileName);
             } else {
+                log.error("Uploaded file SHA-256 checksum does not match the provided checksum for fileName={}", fileName);
                 throw new DigestNotMatchingException("Uploaded file SHA-256 checksum does not match the provided checksum");
             }
         }
@@ -171,6 +174,7 @@ public class LocalStorageFileService implements FileService {
             computedSha256 = HexFormat.of().formatHex(sha256Digest.digest());
             CheckSha256Checksum(computedSha256, providedSha256, fileName);
         } catch (IOException e) {
+            log.error("Error writing uploaded file: {}", e.getMessage());
             throw new DataAccessException("Could not write uploaded file: " + e.getMessage());
         }
 
