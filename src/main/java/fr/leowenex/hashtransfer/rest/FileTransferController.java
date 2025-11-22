@@ -5,8 +5,12 @@ import fr.leowenex.hashtransfer.dto.FileDownloadResponse;
 import fr.leowenex.hashtransfer.dto.FileUploadResponse;
 import fr.leowenex.hashtransfer.service.FileService;
 import fr.leowenex.hashtransfer.util.ContentDigestHeaderUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -14,15 +18,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -93,25 +94,26 @@ public class FileTransferController {
 
 
     @PostMapping
-    public ResponseEntity<@NonNull FileUploadResponse> uploadFile(@RequestPart(value = "file") MultipartFile file, @RequestPart(value = "sha256", required = false) String sha256) throws IOException {
+    public ResponseEntity<@NonNull FileUploadResponse> uploadFile(HttpServletRequest request) throws IOException {
 
-        if (ObjectUtils.isEmpty(file.getOriginalFilename())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File must have a filename");
+        JakartaServletFileUpload<?,?> upload = new JakartaServletFileUpload<>();
+        FileItemInputIterator iterStream = upload.getItemIterator(request);
+        long contentLength = request.getContentLengthLong();
+        String sha256 = ContentDigestHeaderUtils.parseContentDigestHeader(request.getHeader(ContentDigestHeaderUtils.CONTENT_DIGEST_HEADER)).get(ContentDigestHeaderUtils.SHA256_ALGORITHM);
+        FileUploadResponse uploadResponse = null;
+        while (iterStream.hasNext()) {
+            FileItemInput item = iterStream.next();
+            String fieldName = item.getFieldName();
+            if (fieldName.equals("file") && !item.isFormField()) {
+                try(InputStream stream = item.getInputStream()) {
+                    log.debug("Received file upload: fieldName={}, fileName={}, contentType={}", fieldName, item.getName(), item.getContentType());
+                    uploadResponse = fileService.uploadFile(item.getName(), contentLength, item.getContentType(), sha256, stream);
+                }
+            }
         }
-
-        FileUploadResponse uploadResponse;
-
-        try (InputStream inputStream = file.getInputStream()) {
-            uploadResponse = fileService.uploadFile(
-                    file.getOriginalFilename(),
-                    file.getSize(),
-                    file.getContentType(),
-                    sha256,
-                    inputStream
-            );
+        if (uploadResponse == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No file uploaded");
         }
-
-
         return ResponseEntity.ok(uploadResponse);
     }
 

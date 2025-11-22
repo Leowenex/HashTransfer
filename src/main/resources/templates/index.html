@@ -237,10 +237,10 @@
 
         const fd = new FormData();
         fd.append('file', fileInput.files[0]);
-        if(h) fd.append('sha256', h);
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST','/api/file');
+        if(h) xhr.setRequestHeader('Content-Digest','sha-256=' + h);
         xhr.timeout = 180000;
 
         submitBtn.disabled = true;

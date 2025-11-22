@@ -174,7 +174,7 @@ public class LocalStorageFileService implements FileService {
             computedSha256 = HexFormat.of().formatHex(sha256Digest.digest());
             CheckSha256Checksum(computedSha256, providedSha256, fileName);
         } catch (IOException e) {
-            log.error("Error writing uploaded file: {}", e.getMessage());
+            log.error("Error while writing uploaded file: {}", e.getMessage(), e);
             throw new DataAccessException("Could not write uploaded file: " + e.getMessage());
         }
 
