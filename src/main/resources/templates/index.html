@@ -221,7 +221,7 @@
         return /^[a-fA-F0-9]{64}$/.test(v.trim());
     }
 
-    form.addEventListener('submit', function(e){
+    form.onsubmit = function(e){
         e.preventDefault();
         resetUI();
 
@@ -292,16 +292,16 @@
         };
 
         xhr.send(fd);
-    });
+    };
 
-    copyBtn.addEventListener('click', function(){
+    copyBtn.onclick = function(){
         if(!downloadLinkAnchor.href) return;
         navigator.clipboard.writeText(downloadLinkAnchor.href).then(()=>{
             showBarMessage('Lien copié.');
         }).catch(()=>{
             showBarMessage('Copie impossible.', true);
         });
-    });
+    };
 </script>
 </body>
 </html>
