@@ -6,6 +6,7 @@ spring:
       max-file-size: 10GB
       max-request-size: 10GB
       file-size-threshold: 0B
+      location: 'temp/'
 
 hashtransfer:
   expiration-minutes: 1440
