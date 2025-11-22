@@ -1,114 +1,307 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <title>HashTransfer</title>
-
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <style>
-
-        html {
-            margin: 0;
+        :root {
+            --accent:#0a7d35;
+            --accent-bg:#e6f7ed;
+            --error:#b00020;
         }
-
+        html,body {
+            margin:0;
+            padding:0;
+            font-family:Arial,sans-serif;
+            line-height:1.4;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            padding:20px;
+            max-width:520px;
+            margin:auto;
         }
-
-        .upload-form {
-            display: flex;
-            flex-direction: column;
-            width: 300px;
+        h1 {
+            margin-top:0;
         }
-
+        form.upload-form {
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+            max-width:520px;
+        }
         .form-group {
-            margin-bottom: 15px;
+            display:flex;
+            flex-direction:column;
+            gap:4px;
         }
-
+        input[type="text"],input[type="file"] {
+            padding:8px;
+            border:1px solid #ccc;
+            border-radius:4px;
+        }
+        button[type="submit"] {
+            padding:10px 16px;
+            background:var(--accent);
+            color:#fff;
+            border:0;
+            border-radius:4px;
+            cursor:pointer;
+            font-weight:bold;
+        }
+        button[disabled] {
+            opacity:.6;
+            cursor:not-allowed;
+        }
         .progress-wrapper {
-            width:100%;
+            background:#f2f2f2;
+            border-radius:6px;
+            overflow:hidden;
+            position:relative;
+            height:28px;
         }
-        .progress-wrapper .progress {
-            background-color:green;
+        #progress-bar-file {
+            background:var(--accent);
+            height:100%;
             width:0;
-            padding:5px 0 5px 0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#fff;
+            font-size:.85rem;
+            transition:width .25s ease;
+        }
+        #progress-bar-file.complete {
+            animation:pulse 1.2s infinite alternate;
+        }
+        #progress-bar-file.error {
+            background:var(--error);
+        }
+        @keyframes pulse {
+            from {filter:brightness(1);} to {filter:brightness(1.3);}
+        }
+        .download-panel {
+            border:1px solid var(--accent);
+            background:#fff;
+            border-radius:8px;
+            padding:12px 14px;
+            margin-top:16px;
+            box-shadow:0 2px 6px rgba(0,0,0,.08);
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            opacity:0;
+            transform:translateY(6px);
+            transition:opacity .35s ease, transform .35s ease;
+            pointer-events:none;
+        }
+        .download-panel.visible {
+            opacity:1;
+            transform:translateY(0);
+            pointer-events:auto;
+        }
+        .download-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            font-size:1rem;
+            margin-bottom:4px;
+            color:var(--accent);
+        }
+        .download-header .label {
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .download-link-anchor {
+            word-break:break-all;
+            font-size:.80rem;
+            text-decoration:none;
+            color:#064b25;
+        }
+        .download-link-anchor:hover {
+            text-decoration:underline;
+        }
+        .copy-btn {
+            background:#444;
+            color:#fff;
+            border:0;
+            padding:6px 10px;
+            border-radius:4px;
+            cursor:pointer;
+            font-size:0.9rem;
+        }
+        .copy-btn:active {
+            transform:scale(.97);
+        }
+        @media (max-width:500px){
+            body {
+                padding:20px;
+            }
+            form.upload-form {
+                max-width:100%;
+            }
+            .download-header {
+                flex-direction:column;
+                align-items:stretch;
+            }
         }
     </style>
-
-    <script>
-        function postFile() {
-            const formdata = new FormData();
-
-            formdata.append('file', document.getElementById('file').files[0]);
-            if (document.getElementById('fileSh256').value) {
-                formdata.append('sha256', document.getElementById('fileSh256').value);
-            }
-
-            const request = new XMLHttpRequest();
-
-            request.upload.addEventListener('progress', function (e) {
-                const fileSize = document.getElementById('file').files[0].size;
-
-                if (e.loaded <= fileSize) {
-                    const percent = Math.round(e.loaded / fileSize * 100);
-                    document.getElementById('progress-bar-file').style.width = percent + '%';
-                    document.getElementById('progress-bar-file').innerHTML = percent + '%';
-                }
-
-                if(e.loaded === e.total){
-                    document.getElementById('progress-bar-file').style.width = '100%';
-                    document.getElementById('progress-bar-file').innerHTML = 'Upload complete. Processing...';
-                }
-            });
-
-            request.upload.addEventListener('loadend', function () {
-                document.getElementById('progress-bar-file').style.width = '100%';
-                document.getElementById('progress-bar-file').innerHTML = 'Upload complete';
-            });
-
-            request.onreadystatechange = function () {
-                if (request.readyState === XMLHttpRequest.DONE) {
-                    if (request.status === 200) {
-                        const response = JSON.parse(request.responseText);
-                        const downloadLink = window.location.origin + '/api/file/' + response.fileId + '/download';
-                        document.getElementById('download-link-text').innerHTML = 'Download Link: <a href="' + downloadLink + '">' + downloadLink + '</a>';
-                    } else {
-                        alert('File upload failed. Please try again.');
-                    }
-                }
-            };
-
-            request.open('post', '/api/file');
-            request.timeout = 120000;
-            request.send(formdata);
-        }
-    </script>
-
 </head>
 <body>
-    <h1>Welcome to HashTransfer</h1>
-    <p>Your simple file transfer solution.</p>
+<h1>HashTransfer</h1>
+<p>Transférez un fichier et obtenez son lien de partage.</p>
 
-    <h2>Upload your files now !</h2>
-    <form onsubmit="event.preventDefault(); postFile();" class="upload-form">
-        <div class="form-group">
-            <label for="file">Select file to upload:</label>
-            <input id="file" type="file" name="file" required />
-        </div>
-        <div class="form-group">
-            <label for="fileSh256">SHA-256 Hash (Optional):</label>
-            <input id="fileSh256" type="text" name="sha256" placeholder="Enter SHA-256 hash of the file (Optional)"/>
-        </div>
-        <div class="form-group">
-            <button type="submit">Upload File</button>
-        </div>
-        <div class="progress-wrapper">
-            <div id="progress-bar-file" class="progress"></div>
-        </div>
+<form id="uploadForm" class="upload-form" novalidate>
+    <div class="form-group">
+        <label for="file">Fichier :</label>
+        <input id="file" name="file" type="file" required/>
+    </div>
+    <div class="form-group">
+        <label for="fileSha256">Hash SHA-256 (optionnel) :</label>
+        <input id="fileSha256" name="sha256" type="text" placeholder="64 caractères hexadécimaux"/>
+    </div>
+    <div class="form-group">
+        <button id="submitBtn" type="submit">Uploader</button>
+    </div>
 
-        <div class="download-link">
-            <p id ="download-link-text"></p>
+    <div class="progress-wrapper">
+        <div id="progress-bar-file"
+             class="progress"
+             role="progressbar"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             aria-valuenow="0"
+             aria-live="polite"></div>
+    </div>
+
+    <div id="downloadPanel" class="download-panel" aria-live="polite">
+        <div class="download-header">
+            <span class="label">Lien de téléchargement</span>
+            <button type="button" class="copy-btn" id="copyBtn">Copier</button>
         </div>
-    </form>
+        <a id="downloadLinkAnchor" class="download-link-anchor" href="" rel="noopener" target="_blank"></a>
+    </div>
+</form>
+
+<script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('file');
+    const hashInput = document.getElementById('fileSha256');
+    const progressBar = document.getElementById('progress-bar-file');
+    const submitBtn = document.getElementById('submitBtn');
+    const downloadPanel = document.getElementById('downloadPanel');
+    const downloadLinkAnchor = document.getElementById('downloadLinkAnchor');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function resetUI(){
+        progressBar.style.width='0%';
+        progressBar.textContent='';
+        progressBar.classList.remove('complete','error');
+        progressBar.setAttribute('aria-valuenow','0');
+        downloadPanel.classList.remove('visible');
+        downloadLinkAnchor.textContent='';
+        downloadLinkAnchor.removeAttribute('href');
+    }
+
+    function showBarMessage(msg, isError=false){
+        progressBar.style.width='100%';
+        progressBar.textContent = msg || '';
+        progressBar.setAttribute('aria-valuenow','100');
+        if(isError){
+            progressBar.classList.add('error');
+            progressBar.classList.remove('complete');
+        } else {
+            progressBar.classList.remove('error');
+        }
+    }
+
+    function validateHash(v){
+        if(!v) return true;
+        return /^[a-fA-F0-9]{64}$/.test(v.trim());
+    }
+
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        resetUI();
+
+        if(!fileInput.files.length){
+            showBarMessage('Aucun fichier sélectionné.', true);
+            return;
+        }
+        const h = hashInput.value.trim();
+        if(!validateHash(h)){
+            showBarMessage('Hash SHA-256 invalide (64 hex).', true);
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('file', fileInput.files[0]);
+        if(h) fd.append('sha256', h);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST','/api/file');
+        xhr.timeout = 120000;
+
+        submitBtn.disabled = true;
+        showBarMessage('Upload en cours...');
+
+        xhr.upload.onprogress = function(e){
+            if(!e.lengthComputable) return;
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.classList.remove('error');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+            progressBar.setAttribute('aria-valuenow', String(percent));
+            if(percent === 100){
+                progressBar.textContent = 'Upload terminé, traitement...';
+            }
+        };
+
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState === XMLHttpRequest.DONE){
+                submitBtn.disabled = false;
+                if(xhr.status === 200){
+                    try {
+                        const resp = JSON.parse(xhr.responseText);
+                        if(resp.fileId){
+                            const link = window.location.origin + '/api/file/' + resp.fileId + '/download';
+                            downloadLinkAnchor.href = link;
+                            downloadLinkAnchor.textContent = link;
+                            downloadPanel.classList.add('visible');
+                            showBarMessage('Upload réussi');
+                            progressBar.classList.add('complete');
+                        } else {
+                            showBarMessage('Réponse inattendue.', true);
+                        }
+                    } catch(err){
+                        showBarMessage('Erreur JSON.', true);
+                    }
+                } else {
+                    showBarMessage('Échec (' + xhr.status + ').', true);
+                }
+            }
+        };
+        xhr.ontimeout = function(){
+            submitBtn.disabled = false;
+            showBarMessage('Timeout.', true);
+        };
+        xhr.onerror = function(){
+            submitBtn.disabled = false;
+            showBarMessage('Erreur réseau.', true);
+        };
+
+        xhr.send(fd);
+    });
+
+    copyBtn.addEventListener('click', function(){
+        if(!downloadLinkAnchor.href) return;
+        navigator.clipboard.writeText(downloadLinkAnchor.href).then(()=>{
+            showBarMessage('Lien copié.');
+        }).catch(()=>{
+            showBarMessage('Copie impossible.', true);
+        });
+    });
+</script>
 </body>
 </html>
