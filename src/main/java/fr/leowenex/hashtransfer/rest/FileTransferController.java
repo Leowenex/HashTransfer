@@ -57,7 +57,7 @@ public class FileTransferController {
         headers.setContentDisposition(contentDisposition);
         headers.setContentLength(fileResource.contentLength());
         headers.setContentType(mediaType);
-        headers.add("Content-Digest", "sha-256=" + fileData.sha256());
+        headers.add(ContentDigestHeaderUtils.CONTENT_DIGEST_HEADER, ContentDigestHeaderUtils.SHA256_ALGORITHM_PREFIX + fileData.sha256());
 
         return ResponseEntity.ok().headers(headers).body(fileResource);
     }
