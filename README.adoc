@@ -1,0 +1,42 @@
+= HashTransfer
+
+HashTransfer is a simple file transfer web application that allows users to upload files and share the corresponding download link.
+
+Optionally, the user can provide a SHA-256 hash of the file to ensure integrity during upload and download.
+
+== Installation
+
+Hash Transfer is packaged as a Docker Image for easy deployment.
+To run the application with Docker, you may use the following command :
+
+[source,bash]
+----
+docker run -d -p 8080:8080 -v ./ht/files:/app/files leowenex/hashtransfer:latest
+----
+
+Alternatively, you can use the image in a Docker Compose setup :
+[source,yaml]
+----
+version: '3'
+services:
+  hashtransfer:
+    image: leowenex/hashtransfer:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./ht/files:/app/files
+----
+
+== Build from Source
+
+To build the Docker image from source, clone the repository and run the following command in the project directory:
+[source,bash]
+----
+docker build -t leowenex/hashtransfer:latest .
+----
+
+To build the application as a JAR file, ensure you have Maven installed and run:
+[source,bash]
+----
+mvn clean package
+----
