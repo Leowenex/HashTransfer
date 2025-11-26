@@ -13,7 +13,7 @@ public class HashTransferProperties {
 
     private int expirationMinutes = 60 * 24;
     private String expirationCheckCron = "0 0/15 * * * *";
-    private String fileStorageDirectory = "files/";
-    private String metadataFileName = "metadata.json";
+    private String fileStorageDirectory = "/app/files";
+    private String metadataFileName = "metadata.hashtransfer.json";
 
 }

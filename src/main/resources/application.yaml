@@ -3,13 +3,13 @@ spring:
     name: Hash Transfer
   servlet:
     multipart:
-      max-file-size: 10GB
-      max-request-size: 10GB
+      max-file-size: ${HT_MAX_FILE_SIZE:10GB}
+      max-request-size: ${HT_MAX_REQUEST_SIZE:10GB}
       file-size-threshold: 0B
-      location: 'temp/'
+      location: '/app/temp'
 
 hashtransfer:
-  expiration-minutes: 1440
-  expiration-check-cron: '0 */15 * * * *'
-  file-storage-directory: 'files/'
-  metadata-file-name: 'metadata.json'
+  expiration-minutes: ${HT_EXPIRATION_DELAY_MINUTES:1440}
+  expiration-check-cron: ${HT_EXPIRATION_CHECK_CRON:0 */15 * * * *}
+  file-storage-directory: '/app/files'
+  metadata-file-name: metadata.hashtransfer.json
